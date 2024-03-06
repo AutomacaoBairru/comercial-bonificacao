@@ -1,11 +1,15 @@
 .container {
-    margin: 25px 80px;
+  margin: 25px 80px;
 }
 
-.table{
-    margin-top: 18px;
+.table {
+  margin-top: 18px;
 }
 
 .tableHeadCell {
-    font-weight: bold;
-  }
+  font-weight: bold;
+}
+
+.tableRowHover:hover {
+  background-color: #f9f9f9;
+}

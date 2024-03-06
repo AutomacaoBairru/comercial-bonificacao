@@ -19,10 +19,11 @@ import {
 
 interface Props {
   open: boolean;
+  isEdit: boolean;
   onClose: () => void;
 }
 
-export default function ModalCadCondicao({ open, onClose }: Props) {
+export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
   const [titulo, setTitulo] = useState<string>('');
   const [imobiliarias, setImobiliarias] = useState<string[]>([]);
   const [tipo, setTipo] = useState<string>('');
@@ -62,7 +63,7 @@ export default function ModalCadCondicao({ open, onClose }: Props) {
             width: '580px', // Define a largura fixa para o modal
           },
         }}>
-        <DialogTitle>Cadastrar Nova Condição</DialogTitle>
+        <DialogTitle>{!isEdit ? "Cadastrar Nova Condição" : "Editar Condição"}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -152,7 +153,7 @@ export default function ModalCadCondicao({ open, onClose }: Props) {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button color='error'>Remover</Button>
+          {isEdit && <Button color='error'>Remover</Button>}
           <Button onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSubmit}>Salvar</Button>
         </DialogActions>

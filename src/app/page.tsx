@@ -54,6 +54,7 @@ export default function Home() {
   const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); //Controla a abertura e fechamento do menu de opções
   const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
+  const [editBonificacao, setEditBonificacao] = useState<boolean>(false)
 
 
   const dados: DadosTable[] = [
@@ -88,11 +89,20 @@ export default function Home() {
   };
 
   // Função para abrir o modal
-  const handleOpenModalCadBonificacao = () => setOpenModalCadBonificacao(true);
+  const handleOpenModalCadBonificacao = () => {
+    setOpenModalCadBonificacao(true) 
+    setEditBonificacao(false)
+  };
 
   // Função para fechar o modal
-  const handleCloseModalCadBonificacao = () => setOpenModalCadBonificacao(false);
+  const handleCloseModalCadBonificacao = () => {
+    setOpenModalCadBonificacao(false)
+  };
 
+  const handleOpenEditModalBonificacao = (id: number) => {
+    setEditBonificacao(true)
+    setOpenModalCadBonificacao(true)
+  }
 
   //Função para abrir o menu de opções
   const handleOpenMenu: React.MouseEventHandler<HTMLButtonElement> = (event) => {
@@ -190,7 +200,12 @@ export default function Home() {
               </TableHead>
               <TableBody>
                 {dadosOrdenados.slice(pagina * linhasPorPagina, pagina * linhasPorPagina + linhasPorPagina).map((row, index) => (
-                  <TableRow key={index}>
+                  <TableRow
+                    key={index}
+                    className={styles.tableRowHover}
+                    onClick={() => (handleOpenEditModalBonificacao(row.id))}
+                    style={{ cursor: "pointer" }}>
+
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
                     <TableCell>{row.titulo}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
@@ -216,7 +231,7 @@ export default function Home() {
         </Paper>
         <ButtonCadCondicaoImob onClick={handleCadastrarCondicaoImob} />
       </div>
-      <ModalCadCondicao open={openModalCadBonificacao} onClose={handleCloseModalCadBonificacao} />
+      <ModalCadCondicao open={openModalCadBonificacao} isEdit={editBonificacao} onClose={handleCloseModalCadBonificacao} />
     </Fragment>
   );
 }

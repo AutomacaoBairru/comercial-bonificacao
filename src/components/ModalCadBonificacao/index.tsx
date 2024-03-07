@@ -197,7 +197,7 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <TextField
-                label="Propóstas"
+                label="Propostas"
                 id="propostas"
                 type="number"
                 margin='dense'

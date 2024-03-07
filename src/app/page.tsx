@@ -244,7 +244,7 @@ export default function Home() {
                       direction={ordenacaoColuna === "quant_propostas" ? ordenacaoDirecao : "asc"}
                       onClick={() => handleSort("quant_propostas")}
                     >
-                      Propóstas
+                      Propostas
                     </TableSortLabel>
                   </TableCell>
                   <TableCell key="opcoes" className={styles.tableHeadCell}>

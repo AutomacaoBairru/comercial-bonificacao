@@ -185,7 +185,7 @@ export default function BonificacoesGeradas() {
                       direction={ordenacaoColuna === "quant_propostas" ? ordenacaoDirecao : "asc"}
                       onClick={() => handleSort("quant_propostas")}
                     >
-                      Quant. Propóstas
+                      Quant. Propostas
                     </TableSortLabel>
                   </TableCell>
                 </TableRow>

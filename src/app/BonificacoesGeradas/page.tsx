@@ -1,5 +1,5 @@
 "use client"
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -21,10 +21,10 @@ import styles from "./bonificacoesgeradas.module.css";
 
 interface DadosTable {
   id: number;
-  titulo: string;
+  ids_propostas: string;
   imobiliaria: string;
   data: string;
-  comissao: string;
+  valor_receber: string;
   quant_propostas: number;
 }
 
@@ -47,17 +47,14 @@ export default function BonificacoesGeradas() {
   const [pesquisa, setPesquisa] = useState<string>("");
   const [pagina, setPagina] = useState<number>(0);
   const [linhasPorPagina, setLinhasPorPagina] = useState<number>(5);
-  const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("titulo");
+  const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("imobiliaria");
   const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
-  const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
-
 
   const dados: DadosTable[] = [
-    { id: 1, titulo: "Bairru Imobiliária", imobiliaria: "Categoria 1", data: "02/02/2023", comissao: "R$1200", quant_propostas: 5 },
-    { id: 2, titulo: "Imobiliaria 2", imobiliaria: "Categoria 2", data: "02/02/2023", comissao: "R$1200", quant_propostas: 5 },
-    { id: 3, titulo: "Imob 3", imobiliaria: "Categoria 2", data: "02/02/2023", comissao: "R$1200", quant_propostas: 5 },
-    { id: 4, titulo: "Bairru Empreeendimentos", imobiliaria: "Categoria 2", data: "02/02/2023", comissao: "R$1200", quant_propostas: 5 },
-    // Adicione mais dados conforme necessário
+    { id: 1, imobiliaria: "Bairru Imobiliária", ids_propostas: "Categoria 1", data: "02/02/2023", valor_receber: "R$1200", quant_propostas: 2 },
+    { id: 2, imobiliaria: "Imobiliaria 2", ids_propostas: "Categoria 2", data: "02/02/2023", valor_receber: "R$1200", quant_propostas: 2 },
+    { id: 3, imobiliaria: "Imob 3", ids_propostas: "Categoria 2", data: "02/02/2023", valor_receber: "R$1200", quant_propostas: 3 },
+    { id: 4, imobiliaria: "Bairru Empreeendimentos", ids_propostas: "Categoria 2", data: "02/02/2023", valor_receber: "R$5200", quant_propostas: 5 },
   ];
 
   const handleSort = (coluna: keyof DadosTable) => {
@@ -66,7 +63,7 @@ export default function BonificacoesGeradas() {
     setOrdenacaoColuna(coluna);
   };
 
-  const dadosFiltrados = dados.filter((item) => item.titulo.toLowerCase().includes(pesquisa.toLowerCase()));
+  const dadosFiltrados = dados.filter((item) => item.imobiliaria.toLowerCase().includes(pesquisa.toLowerCase()));
   const dadosOrdenados = ordenacaoColuna ? ordenarArray(dadosFiltrados, ordenacaoColuna, ordenacaoDirecao) : dadosFiltrados;
 
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, novaPagina: number): void => {
@@ -81,7 +78,7 @@ export default function BonificacoesGeradas() {
   return (
     <Fragment>
       <div className={styles.container}>
-        <CardTitulo>Bonificação por Imobiliarias</CardTitulo>
+        <CardTitulo buttonGoBack={true}>Bonificação por Imobiliarias</CardTitulo>
         <Paper className={styles.table}>
           <HeaderTable title="Bonificações Geradas" subheader="Relação de todas as bonificações geradas pelo sistema" />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
@@ -114,15 +111,6 @@ export default function BonificacoesGeradas() {
                       ID
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell key="titulo" className={styles.tableHeadCell}>
-                    <TableSortLabel
-                      active={ordenacaoColuna === "titulo"}
-                      direction={ordenacaoColuna === "titulo" ? ordenacaoDirecao : "asc"}
-                      onClick={() => handleSort("titulo")}
-                    >
-                      Titulo
-                    </TableSortLabel>
-                  </TableCell>
                   <TableCell key="imobiliaria" className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={ordenacaoColuna === "imobiliaria"}
@@ -141,22 +129,32 @@ export default function BonificacoesGeradas() {
                       Data
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell key="comissao" className={styles.tableHeadCell}>
+                  <TableCell key="titulo" className={styles.tableHeadCell}>
                     <TableSortLabel
-                      active={ordenacaoColuna === "comissao"}
-                      direction={ordenacaoColuna === "comissao" ? ordenacaoDirecao : "asc"}
-                      onClick={() => handleSort("comissao")}
+                      active={ordenacaoColuna === "ids_propostas"}
+                      direction={ordenacaoColuna === "ids_propostas" ? ordenacaoDirecao : "asc"}
+                      onClick={() => handleSort("ids_propostas")}
                     >
-                      Comissão
+                      Ids Propostas
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell key="comissao" className={styles.tableHeadCell}>
+                    <TableSortLabel
+                      active={ordenacaoColuna === "valor_receber"}
+                      direction={ordenacaoColuna === "valor_receber" ? ordenacaoDirecao : "asc"}
+                      onClick={() => handleSort("valor_receber")}
+                    >
+                      Valor a Receber
+                    </TableSortLabel>
+                  </TableCell>
+
                   <TableCell key="quant_propostas" className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={ordenacaoColuna === "quant_propostas"}
                       direction={ordenacaoColuna === "quant_propostas" ? ordenacaoDirecao : "asc"}
                       onClick={() => handleSort("quant_propostas")}
                     >
-                      Propóstas
+                      Quant. Propóstas
                     </TableSortLabel>
                   </TableCell>
                 </TableRow>
@@ -165,10 +163,10 @@ export default function BonificacoesGeradas() {
                 {dadosOrdenados.slice(pagina * linhasPorPagina, pagina * linhasPorPagina + linhasPorPagina).map((row, index) => (
                   <TableRow key={index}>
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
-                    <TableCell>{row.titulo}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
                     <TableCell>{row.data}</TableCell>
-                    <TableCell>{row.comissao}</TableCell>
+                    <TableCell>{row.ids_propostas}</TableCell>
+                    <TableCell>{row.valor_receber}</TableCell>
                     <TableCell>{row.quant_propostas}</TableCell>
                   </TableRow>
                 ))}
@@ -187,7 +185,7 @@ export default function BonificacoesGeradas() {
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           />
         </Paper>
-        
+            botao voltar
       </div>
     </Fragment>
   );

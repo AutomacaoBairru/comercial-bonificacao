@@ -192,7 +192,7 @@ export default function BonificacoesGeradas() {
               </TableHead>
               <TableBody>
                 {dadosOrdenados.slice(pagina * linhasPorPagina, pagina * linhasPorPagina + linhasPorPagina).map((row, index) => (
-                  <TableRow key={index}>
+                  <TableRow key={index} className={styles.tableRowHover}>
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
                     <TableCell>{row.data}</TableCell>

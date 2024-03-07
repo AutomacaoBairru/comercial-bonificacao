@@ -15,7 +15,9 @@ import {
   Grid,
   Button,
   Skeleton,
+  IconButton,
 } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 import CardTitulo from "@/components/CardTitulo/index.";
 import ButtonCadCondicaoImob from "@/components/ButtonCadCondicaoImob";
 import HeaderTable from "@/components/HeaderTable";
@@ -57,7 +59,6 @@ export default function Home() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); //Controla a abertura e fechamento do menu de opções
   const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
   const [refreshTable, setRefreshTable] = useState<boolean>(true)
-  // const [editBonificacao, setEditBonificacao] = useState<boolean>(false)
 
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
@@ -88,7 +89,7 @@ export default function Home() {
             quant_propostas: item.qnt_propostas,
           };
         });
-        
+
         setDados(dadosTratados);
         setIsLoading(false)
       } catch (error) {
@@ -133,10 +134,6 @@ export default function Home() {
     setOpenModalCadBonificacao(false)
   };
 
-  const handleOpenEditModalBonificacao = (id: number) => {
-    setOpenModalCadBonificacao(true)
-  }
-
   //Função para abrir o menu de opções
   const handleOpenMenu: React.MouseEventHandler<HTMLButtonElement> = (event) => {
     setAnchorEl(event.currentTarget);
@@ -149,6 +146,23 @@ export default function Home() {
 
   const onRefrehTable = () => {
     setRefreshTable(!refreshTable)
+  }
+
+  const handleRemoveItemTable = (id: number) => {
+    const confirmation = confirm("Deseja remover a condição?");
+
+    if (confirmation) {
+      setDados([])
+      setIsLoading(true)
+      axiosInstance.delete(`/bonificacao/deleteCondicaoImobiliarias`, { data: { id_condicao: id } })
+        .then(response => {
+          onRefrehTable();
+        })
+        .catch(error => {
+          console.error("Erro ao remover condição:", error);
+          alert("Houve um erro ao tentar remover a condição.");
+        });
+    }
   }
 
   return (
@@ -233,22 +247,26 @@ export default function Home() {
                       Propóstas
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell key="opcoes" className={styles.tableHeadCell}>
+                    Opçoes
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {dadosOrdenados.slice(pagina * linhasPorPagina, pagina * linhasPorPagina + linhasPorPagina).map((row, index) => (
                   <TableRow
-                    key={index}
-                    className={styles.tableRowHover}
-                    onClick={() => (handleOpenEditModalBonificacao(row.id))}
-                    style={{ cursor: "pointer" }}>
-
+                    key={index} className={styles.tableRowHover}>
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
                     <TableCell>{row.titulo}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
                     <TableCell>{row.data}</TableCell>
                     <TableCell>{row.comissao}</TableCell>
                     <TableCell>{row.quant_propostas}</TableCell>
+                    <TableCell>
+                      <IconButton aria-label="delete" size="small" onClick={() => { handleRemoveItemTable(row.id) }}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {isLoading && <>
@@ -258,7 +276,9 @@ export default function Home() {
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
                   </TableRow><TableRow>
+                    <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>

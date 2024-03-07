@@ -1,5 +1,6 @@
 "use client"
 import React, { Fragment, useState, useEffect } from "react";
+import axiosInstance from "../../services/axios"
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import {
   TablePagination,
   TableSortLabel,
   Grid,
-  Button,
+  Skeleton
 } from "@mui/material";
 import CardTitulo from "@/components/CardTitulo/index.";
 import HeaderTable from "@/components/HeaderTable";
@@ -49,13 +50,44 @@ export default function BonificacoesGeradas() {
   const [linhasPorPagina, setLinhasPorPagina] = useState<number>(5);
   const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("imobiliaria");
   const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
+  const [isLoading, setIsLoading] = useState<boolean>(true) //Controla o estado da tabela enquanto ocorre o carregamento
 
-  const dados: DadosTable[] = [
-    { id: 1, imobiliaria: "Bairru Imobiliária", ids_propostas: "Categoria 1", data: "02/02/2023", valor_receber: "R$1200", quant_propostas: 2 },
-    { id: 2, imobiliaria: "Imobiliaria 2", ids_propostas: "Categoria 2", data: "02/02/2023", valor_receber: "R$1200", quant_propostas: 2 },
-    { id: 3, imobiliaria: "Imob 3", ids_propostas: "Categoria 2", data: "02/02/2023", valor_receber: "R$1200", quant_propostas: 3 },
-    { id: 4, imobiliaria: "Bairru Empreeendimentos", ids_propostas: "Categoria 2", data: "02/02/2023", valor_receber: "R$5200", quant_propostas: 5 },
-  ];
+  const [dados, setDados] = useState<DadosTable[]>([]); // Alterado para armazenar dados da API
+
+  useEffect(() => {
+    const fetchDados = async () => {
+      setIsLoading(true)
+      try {
+
+        const response = await axiosInstance.get('/bonificacao/getBonificacao');
+        console.info(response.data.data)
+
+        const dadosTratados = response.data.data.map((item: any) => {
+          const dataFormatada = new Date(item.data_criacao).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
+
+          return {
+            id: item.id,
+            ids_propostas: "Verificar",
+            imobiliaria: item.nome_imobiliaria,
+            data: dataFormatada,
+            valor_receber: `R$ ${item.valor_bonificacao}`,
+            quant_propostas: item.quant_propostas,
+          };
+        });
+
+        setDados(dadosTratados);
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
+    fetchDados();
+  }, []);
 
   const handleSort = (coluna: keyof DadosTable) => {
     const isAsc = ordenacaoColuna === coluna && ordenacaoDirecao === "asc";
@@ -86,7 +118,7 @@ export default function BonificacoesGeradas() {
               <TextField
                 label="Pesquisar"
                 style={{ width: 380 }}
-                placeholder="Digite o titulo...."
+                placeholder="Digite a Imobiliaria...."
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -170,6 +202,21 @@ export default function BonificacoesGeradas() {
                     <TableCell>{row.quant_propostas}</TableCell>
                   </TableRow>
                 ))}
+                {/* Exibe duas linhas com  Skeleton Loading até a consulta ser finalizada*/}
+                {isLoading && <>
+                  <TableRow>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                  </TableRow><TableRow>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                  </TableRow> </>}
               </TableBody>
             </Table>
           </TableContainer>
@@ -185,7 +232,7 @@ export default function BonificacoesGeradas() {
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           />
         </Paper>
-            botao voltar
+        botao voltar
       </div>
     </Fragment>
   );

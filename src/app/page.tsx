@@ -70,7 +70,6 @@ export default function Home() {
         const response = await axiosInstance.get('/bonificacao/getCondPorImobiliarias');
 
         const dadosTratados = response.data.data.map((item: any) => {
-          console.info(item.titulo)
           // Converte a data em timestamp para data no formato DD/MM/YYYY
           const dataFormatada = new Date(item.data_inicial).toLocaleDateString('pt-BR', {
             day: '2-digit',
@@ -82,7 +81,7 @@ export default function Home() {
             id: item.id_condicao_imob,
             titulo: !item.titulo ? "Sem titulo informado" : item.titulo,
             imobiliaria: item.nome_imobiliaria,
-            data: dataFormatada, //Formata a data antes de adicionar ao objeto
+            data: dataFormatada, //Formata a data antes de adicionar
             comissao: !item.valor_bonificacao ? "" : "R$ " + item.valor_bonificacao,
             quant_propostas: item.qnt_propostas,
           };

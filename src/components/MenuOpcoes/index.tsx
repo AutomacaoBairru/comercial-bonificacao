@@ -24,7 +24,7 @@ export default function MenuOpcoes({ anchorEl, onClose }: Props) {
             open={Boolean(anchorEl)}
             onClose={onClose}
         >
-            <MenuItem onClick={onClose}>Adicionar Condição</MenuItem>
+            {/* <MenuItem onClick={onClose}>Adicionar Condição</MenuItem> */}
             {/* Use a função handleBonificacoesClick aqui */}
             <MenuItem onClick={handleNavigateBonificacoesGeradas}>Bonificações Geradas</MenuItem>
         </Menu>

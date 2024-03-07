@@ -1,4 +1,5 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
+import axiosInstance from '../../services/axios';
 import {
   Dialog,
   DialogContent,
@@ -19,16 +20,24 @@ import {
 
 interface Props {
   open: boolean;
-  isEdit: boolean;
   onClose: () => void;
+  onRefrehTable: () => void;
 }
 
-export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
+interface ListaImobiliarias {
+  id: string;
+  titulo: string;
+}
+
+export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props) {
   const [titulo, setTitulo] = useState<string>('');
   const [imobiliarias, setImobiliarias] = useState<string[]>([]);
   const [tipo, setTipo] = useState<string>('');
-  const [propostas, setPropostas] = useState<number>()
+  const [propostas, setPropostas] = useState<string>()
   const [valorReceber, setValorReceber] = useState<string>('')
+  const [listImobiliarias, setListImobiliarias] = useState<ListaImobiliarias[]>([])
+
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   const handleChangeImobiliarias = (event: SelectChangeEvent<typeof imobiliarias[number][]>) => {
     const value = event.target.value;
@@ -41,17 +50,75 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
     setTipo(event.target.value as string);
   };
 
-  const handleSubmit = () => {
-    alert("Envio dos dados para API");
-    console.log({ titulo, imobiliarias, tipo });
-    onClose();
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true)
+      // Verifica se os valores necessários estão presentes
+      if (!titulo || !propostas || !valorReceber || !imobiliarias) {
+        alert('Preencha todos os campos.');
+        return;
+      }
+
+      // Prepara o corpo da requisição
+      const body = {
+        titulo: titulo,
+        id_imobiliaria: imobiliarias,
+        quant_propostas: parseInt(propostas, 10), // Garante que propostas seja um número
+        percentual: "0",
+        valor_fixo: valorReceber
+      };
+
+      // Faz a requisição POST
+      const response = await axiosInstance.post('/bonificacao/postCondicaoImobiliarias', body);
+      if (response.data.status) {
+        alert('Condição cadastrada com sucesso!');
+        onRefrehTable() //Atualiza a tabela Lista de Condições no componente Pai
+        onClose(); //Fecha o modal se tudo ocorrer bem
+
+        //Limpa todos os campos após fechar a janela
+        setTitulo('');
+        setPropostas('');
+        setValorReceber('')
+        setTipo('')
+        setImobiliarias([])
+      }
+      else {
+        alert('Ocorreu um erro ao cadastrar a condição.');
+      }
+
+    } catch (error) {
+      console.error('Erro ao cadastrar condição:', error);
+      alert('Erro ao cadastrar condição. Tente novamente.');
+    } finally {
+      setIsLoading(false)
+    }
   };
 
-  const listImobiliarias = [
-    { id: '1', titulo: 'Imobiliária 1' },
-    { id: '2', titulo: 'Imobiliária 2' },
-    { id: '3', titulo: 'Imobiliária 3' },
-  ];
+  useEffect(() => {
+    const fetchDados = async () => {
+      setIsLoading(true)
+      try {
+        const response = await axiosInstance.get('/bonificacao/getImobiliarias');
+        const dadosTratados = response.data.data.map((item: any) => {
+
+          return {
+            id: item.id,
+            titulo: item.nome
+          };
+        });
+
+        setListImobiliarias(dadosTratados)
+
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        setIsLoading(false)
+      }
+    };
+
+    fetchDados();
+  }, []);
+
 
   return (
     <Fragment>
@@ -63,7 +130,7 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
             width: '580px', // Define a largura fixa para o modal
           },
         }}>
-        <DialogTitle>{!isEdit ? "Cadastrar Nova Condição" : "Editar Condição"}</DialogTitle>
+        <DialogTitle>Cadastrar Nova Condição</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -74,20 +141,22 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             fullWidth
+            disabled={isLoading}
             InputLabelProps={{
               shrink: true,
             }}
             style={{ marginBottom: 8 }}
           />
           <FormControl fullWidth margin="dense" style={{ marginBottom: 8 }}>
-            <InputLabel id="imobiliarias-label">Selecione a Imobiliária</InputLabel>
+            <InputLabel id="imobiliarias-label">{isLoading ? "Carregando..." : "Selecione a imobiliaria"}</InputLabel>
             <Select
               labelId="imobiliarias"
               id="imobiliaria"
+              disabled={isLoading}
               multiple
               value={imobiliarias}
               onChange={handleChangeImobiliarias}
-              input={<OutlinedInput label="Selecione a Imobiliária" />}
+              input={<OutlinedInput label="Selecione a imobiliaria" />}
               renderValue={(selected) => (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {selected.map((value) =>
@@ -113,6 +182,7 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
               labelId="tipo"
               id="tipo"
               value={tipo}
+              disabled={isLoading}
               onChange={handleChangeTipo}
               input={<OutlinedInput label="Tipo de Bonificação" />}
             >
@@ -132,11 +202,12 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
                 type="number"
                 margin='dense'
                 fullWidth
+                disabled={isLoading}
                 InputLabelProps={{
                   shrink: true,
                 }}
                 value={propostas}
-                onChange={(e) => setPropostas(e.target.value ? parseInt(e.target.value, 10) : 0)}
+                onChange={(e) => { setPropostas(e.target.value) }}
                 variant="outlined"
               />
             </Grid>
@@ -146,6 +217,9 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
                 id="valor_a_receber"
                 margin='dense'
                 fullWidth
+                disabled={isLoading}
+                value={valorReceber}
+                onChange={(e) => setValorReceber(e.target.value)}
                 InputLabelProps={{ shrink: true, }}
                 variant="outlined"
               />
@@ -153,9 +227,9 @@ export default function ModalCadCondicao({ open, isEdit, onClose }: Props) {
           </Grid>
         </DialogContent>
         <DialogActions>
-          {isEdit && <Button color='error'>Remover</Button>}
+
           <Button onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>Salvar</Button>
+          <Button onClick={handleSubmit} disabled={isLoading}>Salvar</Button>
         </DialogActions>
       </Dialog>
     </Fragment>

@@ -60,7 +60,6 @@ export default function BonificacoesGeradas() {
       try {
 
         const response = await axiosInstance.get('/bonificacao/getBonificacao');
-        console.info(response.data.data)
 
         const dadosTratados = response.data.data.map((item: any) => {
           const dataFormatada = new Date(item.data_criacao).toLocaleDateString('pt-BR', {

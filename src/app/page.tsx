@@ -56,7 +56,8 @@ export default function Home() {
   const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); //Controla a abertura e fechamento do menu de opções
   const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
-  const [editBonificacao, setEditBonificacao] = useState<boolean>(false)
+  const [refreshTable, setRefreshTable] = useState<boolean>(true)
+  // const [editBonificacao, setEditBonificacao] = useState<boolean>(false)
 
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
@@ -65,6 +66,7 @@ export default function Home() {
   useEffect(() => {
     const fetchDados = async () => {
       setIsLoading(true)
+      setDados([])
       try {
 
         const response = await axiosInstance.get('/bonificacao/getCondPorImobiliarias');
@@ -95,7 +97,7 @@ export default function Home() {
     };
 
     fetchDados();
-  }, []);
+  }, [refreshTable]);
 
   const handleSort = (coluna: keyof DadosTable) => {
     const isAsc = ordenacaoColuna === coluna && ordenacaoDirecao === "asc";
@@ -124,7 +126,6 @@ export default function Home() {
   // Função para abrir o modal
   const handleOpenModalCadBonificacao = () => {
     setOpenModalCadBonificacao(true)
-    setEditBonificacao(false)
   };
 
   // Função para fechar o modal
@@ -133,7 +134,6 @@ export default function Home() {
   };
 
   const handleOpenEditModalBonificacao = (id: number) => {
-    setEditBonificacao(true)
     setOpenModalCadBonificacao(true)
   }
 
@@ -146,6 +146,10 @@ export default function Home() {
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
+
+  const onRefrehTable = () => {
+    setRefreshTable(!refreshTable)
+  }
 
   return (
     <Fragment>
@@ -278,7 +282,7 @@ export default function Home() {
         </Paper>
         <ButtonCadCondicaoImob onClick={handleCadastrarCondicaoImob} />
       </div>
-      <ModalCadCondicao open={openModalCadBonificacao} isEdit={editBonificacao} onClose={handleCloseModalCadBonificacao} />
+      <ModalCadCondicao open={openModalCadBonificacao} onRefrehTable={onRefrehTable} onClose={handleCloseModalCadBonificacao} />
     </Fragment>
   );
 }

@@ -1,5 +1,6 @@
 "use client"
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
+import axiosInstance from "../services/axios"
 import {
   Table,
   TableBody,
@@ -13,6 +14,7 @@ import {
   TableSortLabel,
   Grid,
   Button,
+  Skeleton,
 } from "@mui/material";
 import CardTitulo from "@/components/CardTitulo/index.";
 import ButtonCadCondicaoImob from "@/components/ButtonCadCondicaoImob";
@@ -56,13 +58,45 @@ export default function Home() {
   const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
   const [editBonificacao, setEditBonificacao] = useState<boolean>(false)
 
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  const dados: DadosTable[] = [
-    { id: 1, titulo: "Titulo 1", imobiliaria: "Bairru Imobiliaria", data: "02/02/2023", comissao: "R$1200", quant_propostas: 2 },
-    { id: 2, titulo: "Titulo 2", imobiliaria: "Empreendimentos Bairru", data: "02/02/2023", comissao: "R$1200", quant_propostas: 3 },
-    { id: 3, titulo: "Titulo 3", imobiliaria: "Imob Teste 1", data: "02/02/2023", comissao: "R$1300", quant_propostas: 2 },
-    { id: 4, titulo: "Titulo 4", imobiliaria: "Imob Teste 2", data: "02/02/2023", comissao: "R$2400", quant_propostas: 2 },
-  ];
+  const [dados, setDados] = useState<DadosTable[]>([]); // Alterado para armazenar dados da API
+
+  useEffect(() => {
+    const fetchDados = async () => {
+      setIsLoading(true)
+      try {
+
+        const response = await axiosInstance.get('/bonificacao/getCondPorImobiliarias');
+
+        const dadosTratados = response.data.data.map((item: any) => {
+          console.info(item.titulo)
+          // Converte a data em timestamp para data no formato DD/MM/YYYY
+          const dataFormatada = new Date(item.data_inicial).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
+
+          return {
+            id: item.id_condicao_imob,
+            titulo: !item.titulo ? "Sem titulo informado" : item.titulo,
+            imobiliaria: item.nome_imobiliaria,
+            data: dataFormatada, //Formata a data antes de adicionar ao objeto
+            comissao: !item.valor_bonificacao ? "" : "R$ " + item.valor_bonificacao,
+            quant_propostas: item.qnt_propostas,
+          };
+        });
+        
+        setDados(dadosTratados);
+        setIsLoading(false)
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
+    fetchDados();
+  }, []);
 
   const handleSort = (coluna: keyof DadosTable) => {
     const isAsc = ordenacaoColuna === coluna && ordenacaoDirecao === "asc";
@@ -90,7 +124,7 @@ export default function Home() {
 
   // Função para abrir o modal
   const handleOpenModalCadBonificacao = () => {
-    setOpenModalCadBonificacao(true) 
+    setOpenModalCadBonificacao(true)
     setEditBonificacao(false)
   };
 
@@ -214,6 +248,20 @@ export default function Home() {
                     <TableCell>{row.quant_propostas}</TableCell>
                   </TableRow>
                 ))}
+                {isLoading && <>
+                  <TableRow>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                  </TableRow><TableRow>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
+                  </TableRow> </>}
               </TableBody>
             </Table>
           </TableContainer>

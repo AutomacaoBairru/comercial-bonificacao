@@ -117,7 +117,7 @@ export default function Home() {
   return (
     <Fragment>
       <div className={styles.container}>
-        <CardTitulo>Bonificação por Imobiliarias</CardTitulo>
+        <CardTitulo buttonGoBack={false}>Bonificação por Imobiliarias</CardTitulo>
         <Paper className={styles.table}>
           <HeaderTable title="Lista de Condições" subheader="Condições ativas até o momento" />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>

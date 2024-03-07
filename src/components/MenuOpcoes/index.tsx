@@ -1,6 +1,6 @@
 import React from "react";
 import { Menu, MenuItem } from "@mui/material";
-import { useRouter } from "next/navigation"; // Importe useRouter de next/router
+import { useRouter } from "next/navigation";
 
 interface Props {
     anchorEl: null | HTMLElement;
@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function MenuOpcoes({ anchorEl, onClose }: Props) {
-    const router = useRouter(); // Utilize o hook useRouter
+    const router = useRouter(); // Hook para trabalhar com a navegação
 
     // Função para lidar com o clique em "Bonificações Geradas"
     const handleNavigateBonificacoesGeradas = () => {

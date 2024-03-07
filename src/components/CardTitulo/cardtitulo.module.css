@@ -1,6 +1,11 @@
 .container {
+  display: flex;
   background-color: #fbfbfb6b;
   padding: 8px 12px;
   border-radius: 4px;
   color: aliceblue;
+}
+
+.title {
+  margin-left: 16px;
 }

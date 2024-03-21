@@ -121,7 +121,7 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
         onClose={onClose}
         PaperProps={{
           style: {
-            width: '580px', // Define a largura fixa para o modal
+            width: '580px',
           },
         }}
       >

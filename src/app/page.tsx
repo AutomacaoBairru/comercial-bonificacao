@@ -32,6 +32,7 @@ interface DadosTable {
   imobiliaria: string;
   data: string;
   comissao: string;
+  empreendimento: string;
   quant_propostas: number;
 }
 
@@ -86,7 +87,8 @@ export default function Home() {
             imobiliaria: item.nome_imobiliaria,
             data: dataFormatada, //Formata a data antes de adicionar
             comissao: !item.valor_bonificacao ? "" : "R$ " + item.valor_bonificacao,
-            quant_propostas: item.qnt_propostas,
+            empreendimento: item.empreendimento,
+            quant_propostas: item.qtd_propostas,
           };
         });
 
@@ -220,6 +222,15 @@ export default function Home() {
                       Imobiliaria
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell key="empreendimento" className={styles.tableHeadCell}>
+                    <TableSortLabel
+                      active={ordenacaoColuna === "empreendimento"}
+                      direction={ordenacaoColuna === "empreendimento" ? ordenacaoDirecao : "asc"}
+                      onClick={() => handleSort("empreendimento")}
+                    >
+                      Empreendimento
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell key="data" className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={ordenacaoColuna === "data"}
@@ -259,6 +270,7 @@ export default function Home() {
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
                     <TableCell>{row.titulo}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
+                    <TableCell>{row.empreendimento}</TableCell>
                     <TableCell>{row.data}</TableCell>
                     <TableCell>{row.comissao}</TableCell>
                     <TableCell>{row.quant_propostas}</TableCell>
@@ -277,7 +289,9 @@ export default function Home() {
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
                   </TableRow><TableRow>
+                    <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>

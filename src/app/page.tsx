@@ -85,7 +85,7 @@ export default function Home() {
             id: item.id_condicao_imob,
             titulo: !item.titulo ? "Sem titulo informado" : item.titulo,
             imobiliaria: item.nome_imobiliaria,
-            data: dataFormatada, //Formata a data antes de adicionar
+            data: dataFormatada,
             comissao: !item.valor_bonificacao ? "" : "R$ " + item.valor_bonificacao,
             empreendimento: item.empreendimento,
             quant_propostas: item.qtd_propostas,

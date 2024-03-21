@@ -50,7 +50,6 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
   const handleSubmit = async () => {
     try {
       setIsLoading(true)
-      // Verifica se os valores necessários estão presentes
       if (!titulo || !propostas || !valorReceber || !empreendimento) {
         alert('Preencha todos os campos.');
         return;
@@ -59,21 +58,18 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
       // Prepara o corpo da requisição
       const body = {
         titulo: titulo,
-        // id_imobiliaria: empreendimento,
         id_empreendimento : empreendimento,
-        quant_propostas: parseInt(propostas, 10), // Garante que propostas seja um número
+        quant_propostas: parseInt(propostas, 10),
         percentual: "0",
         valor_fixo: valorReceber
       };
 
-      // Faz a requisição POST
       const response = await axiosInstance.post('/bonificacao/postCondicaoEmpreendimento', body);
       if (response.data.status) {
         alert('Condição cadastrada com sucesso!');
         onRefrehTable();
-        onClose(); //Fecha o modal se tudo ocorrer bem
+        onClose();
 
-        //Limpa todos os campos após fechar a janela
         setTitulo('');
         setPropostas('');
         setValorReceber('')

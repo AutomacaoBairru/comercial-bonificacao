@@ -56,23 +56,24 @@ export default function BonificacoesGeradas() {
 
   useEffect(() => {
     const fetchDados = async () => {
+      const ajustarData = (timestamp: string) => {
+        const data = new Date(timestamp);
+        const dia = data.getUTCDate().toString().padStart(2, '0');
+        const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+        const ano = data.getUTCFullYear();
+        return `${dia}/${mes}/${ano}`;
+      };
+
       setIsLoading(true)
       try {
-
         const response = await axiosInstance.get('/bonificacao/getBonificacao');
 
         const dadosTratados = response.data.data.map((item: any) => {
-          const dataFormatada = new Date(item.data_criacao).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          });
-
           return {
             id: item.id,
-            ids_propostas: "Verificar",
+            ids_propostas: item.ids_propostas_vimob.join(', '),
             imobiliaria: item.nome_imobiliaria,
-            data: dataFormatada,
+            data: ajustarData(item.data_criacao),
             valor_receber: `R$ ${item.valor_bonificacao}`,
             quant_propostas: item.quant_propostas,
           };
@@ -231,7 +232,6 @@ export default function BonificacoesGeradas() {
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           />
         </Paper>
-        botao voltar
       </div>
     </Fragment>
   );

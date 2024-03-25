@@ -31,19 +31,16 @@ interface ListaImobiliarias {
 
 export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props) {
   const [titulo, setTitulo] = useState<string>('');
-  const [imobiliarias, setImobiliarias] = useState<string[]>([]);
+  const [empreendimento, setEmpreendimento] = useState<string>('');
   const [tipo, setTipo] = useState<string>('');
   const [propostas, setPropostas] = useState<string>()
   const [valorReceber, setValorReceber] = useState<string>('')
-  const [listImobiliarias, setListImobiliarias] = useState<ListaImobiliarias[]>([])
+  const [listEmpreedimentos, setListEmpreendimentos] = useState<ListaImobiliarias[]>([])
 
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  const handleChangeImobiliarias = (event: SelectChangeEvent<typeof imobiliarias[number][]>) => {
-    const value = event.target.value;
-    setImobiliarias(
-      typeof value === 'string' ? [value] : value,
-    );
+  const handleChangeImobiliarias = (event: SelectChangeEvent) => {
+    setEmpreendimento(event.target.value as string);
   };
 
   const handleChangeTipo = (event: SelectChangeEvent) => {
@@ -53,8 +50,7 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
   const handleSubmit = async () => {
     try {
       setIsLoading(true)
-      // Verifica se os valores necessários estão presentes
-      if (!titulo || !propostas || !valorReceber || !imobiliarias) {
+      if (!titulo || !propostas || !valorReceber || !empreendimento) {
         alert('Preencha todos os campos.');
         return;
       }
@@ -62,25 +58,23 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
       // Prepara o corpo da requisição
       const body = {
         titulo: titulo,
-        id_imobiliaria: imobiliarias,
-        quant_propostas: parseInt(propostas, 10), // Garante que propostas seja um número
+        id_empreendimento : empreendimento,
+        quant_propostas: parseInt(propostas, 10),
         percentual: "0",
         valor_fixo: valorReceber
       };
 
-      // Faz a requisição POST
-      const response = await axiosInstance.post('/bonificacao/postCondicaoImobiliarias', body);
+      const response = await axiosInstance.post('/bonificacao/postCondicaoEmpreendimento', body);
       if (response.data.status) {
         alert('Condição cadastrada com sucesso!');
-        onRefrehTable() //Atualiza a tabela Lista de Condições no componente Pai
-        onClose(); //Fecha o modal se tudo ocorrer bem
+        onRefrehTable();
+        onClose();
 
-        //Limpa todos os campos após fechar a janela
         setTitulo('');
         setPropostas('');
         setValorReceber('')
         setTipo('')
-        setImobiliarias([])
+        setEmpreendimento('')
       }
       else {
         alert('Ocorreu um erro ao cadastrar a condição.');
@@ -98,16 +92,16 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
     const fetchDados = async () => {
       setIsLoading(true)
       try {
-        const response = await axiosInstance.get('/bonificacao/getImobiliarias');
+        const response = await axiosInstance.get('/bonificacao/getEmpreendimentos');
         const dadosTratados = response.data.data.map((item: any) => {
 
           return {
             id: item.id,
-            titulo: item.nome
+            titulo: item.name
           };
         });
 
-        setListImobiliarias(dadosTratados)
+        setListEmpreendimentos(dadosTratados)
 
         setIsLoading(false)
       } catch (error) {
@@ -127,9 +121,10 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
         onClose={onClose}
         PaperProps={{
           style: {
-            width: '580px', // Define a largura fixa para o modal
+            width: '580px',
           },
-        }}>
+        }}
+      >
         <DialogTitle>Cadastrar Nova Condição</DialogTitle>
         <DialogContent>
           <TextField
@@ -148,28 +143,18 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
             style={{ marginBottom: 8 }}
           />
           <FormControl fullWidth margin="dense" style={{ marginBottom: 8 }}>
-            <InputLabel id="imobiliarias-label">{isLoading ? "Carregando..." : "Selecione a imobiliaria"}</InputLabel>
+            <InputLabel id="empreendimento-label">
+              {isLoading ? "Carregando..." : "Selecione o Empreendimento"}
+            </InputLabel>
             <Select
-              labelId="imobiliarias"
-              id="imobiliaria"
+              labelId="empreendimento-label"
+              id="empreendimento"
               disabled={isLoading}
-              multiple
-              value={imobiliarias}
+              value={empreendimento}
               onChange={handleChangeImobiliarias}
-              input={<OutlinedInput label="Selecione a imobiliaria" />}
-              renderValue={(selected) => (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {selected.map((value) =>
-                    listImobiliarias
-                      .filter((imobiliaria) => imobiliaria.id === value)
-                      .map((imobiliaria) => (
-                        <Chip key={imobiliaria.id} label={imobiliaria.titulo} />
-                      ))
-                  )}
-                </div>
-              )}
+              input={<OutlinedInput label="Selecione o Empreendimento" />}
             >
-              {listImobiliarias.map((opcao) => (
+              {listEmpreedimentos.map((opcao) => (
                 <MenuItem key={opcao.id} value={opcao.id}>
                   {opcao.titulo}
                 </MenuItem>
@@ -227,11 +212,11 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
           </Grid>
         </DialogContent>
         <DialogActions>
-
           <Button onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSubmit} disabled={isLoading}>Salvar</Button>
         </DialogActions>
       </Dialog>
     </Fragment>
   );
+  
 }

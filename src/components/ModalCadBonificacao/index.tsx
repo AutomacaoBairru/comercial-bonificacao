@@ -1,3 +1,4 @@
+"use client"
 import React, { Fragment, useState, useEffect } from 'react';
 import axiosInstance from '../../services/axios';
 import {
@@ -12,11 +13,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
   OutlinedInput,
   SelectChangeEvent,
 } from '@mui/material';
-
+import { useRouter } from "next/navigation";
 
 interface Props {
   open: boolean;
@@ -33,11 +33,12 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
   const [titulo, setTitulo] = useState<string>('');
   const [empreendimento, setEmpreendimento] = useState<string>('');
   const [tipo, setTipo] = useState<string>('');
-  const [propostas, setPropostas] = useState<string>()
-  const [valorReceber, setValorReceber] = useState<string>('')
-  const [listEmpreedimentos, setListEmpreendimentos] = useState<ListaImobiliarias[]>([])
+  const [propostas, setPropostas] = useState<string>();
+  const [valorReceber, setValorReceber] = useState<string>('');
+  const [listEmpreedimentos, setListEmpreendimentos] = useState<ListaImobiliarias[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const navigation = useRouter();
 
   const handleChangeImobiliarias = (event: SelectChangeEvent) => {
     setEmpreendimento(event.target.value as string);
@@ -55,7 +56,6 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
         return;
       }
 
-      // Prepara o corpo da requisição
       const body = {
         titulo: titulo,
         id_empreendimento : empreendimento,
@@ -69,12 +69,13 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
         alert('Condição cadastrada com sucesso!');
         onRefrehTable();
         onClose();
-
         setTitulo('');
         setPropostas('');
         setValorReceber('')
         setTipo('')
         setEmpreendimento('')
+
+        return navigation.replace("/")
       }
       else {
         alert('Ocorreu um erro ao cadastrar a condição.');
@@ -94,7 +95,6 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
       try {
         const response = await axiosInstance.get('/bonificacao/getEmpreendimentos');
         const dadosTratados = response.data.data.map((item: any) => {
-
           return {
             id: item.id,
             titulo: item.name
@@ -102,7 +102,6 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
         });
 
         setListEmpreendimentos(dadosTratados)
-
         setIsLoading(false)
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
@@ -112,7 +111,6 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
 
     fetchDados();
   }, []);
-
 
   return (
     <Fragment>
@@ -218,5 +216,4 @@ export default function ModalCadCondicao({ open, onClose, onRefrehTable }: Props
       </Dialog>
     </Fragment>
   );
-  
 }

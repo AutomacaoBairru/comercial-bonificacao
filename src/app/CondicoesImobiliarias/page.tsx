@@ -13,19 +13,24 @@ import {
   TablePagination,
   TableSortLabel,
   Grid,
-  Skeleton
+  Skeleton,
+  IconButton,
 } from "@mui/material";
-import CardTitulo from "@/components/CardTitulo/index.";
+import DeleteIcon from '@mui/icons-material/Delete';
+import ButtonCadCondicaoImob from "@/components/ButtonCadCondicaoImob";
 import HeaderTable from "@/components/HeaderTable";
-
-import styles from "./bonificacoesgeradas.module.css";
+import ModalCadCondicao from "@/components/ModalCadBonificacao";
+import styles from "./condicoesImobiliarias.module.css";
+import ButtonBonificacoesGeradas from "@/components/ButtonBonificacoesGeradas";
+import { useSearchParams } from 'next/navigation'
 
 interface DadosTable {
   id: number;
-  ids_propostas: string;
+  titulo: string;
   imobiliaria: string;
   data: string;
-  valor_receber: string;
+  comissao: string;
+  empreendimento: string;
   quant_propostas: number;
 }
 
@@ -44,38 +49,41 @@ function ordenarArray(array: DadosTable[], coluna: keyof DadosTable, direcao: Or
   });
 }
 
-export default function BonificacoesGeradas() {
+export default function CondicoesImobiliarias() {
   const [pesquisa, setPesquisa] = useState<string>("");
   const [pagina, setPagina] = useState<number>(0);
   const [linhasPorPagina, setLinhasPorPagina] = useState<number>(5);
-  const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("imobiliaria");
+  const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("titulo");
   const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
-  const [isLoading, setIsLoading] = useState<boolean>(true) //Controla o estado da tabela enquanto ocorre o carregamento
+  const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
+  const [refreshTable, setRefreshTable] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [dados, setDados] = useState<DadosTable[]>([]);
 
-  const [dados, setDados] = useState<DadosTable[]>([]); // Alterado para armazenar dados da API
+  const router = useSearchParams()
+  const id_grupo = router.get('id')
 
   useEffect(() => {
     const fetchDados = async () => {
-      const ajustarData = (timestamp: string) => {
-        const data = new Date(timestamp);
-        const dia = data.getUTCDate().toString().padStart(2, '0');
-        const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
-        const ano = data.getUTCFullYear();
-        return `${dia}/${mes}/${ano}`;
-      };
-
       setIsLoading(true)
+      setDados([])
       try {
-        const response = await axiosInstance.get('/bonificacao/getBonificacao');
-
+        const response = await axiosInstance.post('/bonificacao/getCondPorImobiliarias', {
+            id_grupo: id_grupo 
+        });
         const dadosTratados = response.data.data.map((item: any) => {
+          const dataISO = new Date(item.data_inicial).toISOString().substring(0, 10);
+          const [ano, mes, dia] = dataISO.split('-');
+          const dataFormatada = [dia, mes, ano].join('/');
+
           return {
-            id: item.id,
-            ids_propostas: item.ids_propostas_vimob.join(', '),
+            id: item.id_condicao_imob,
+            titulo: !item.titulo ? "Sem titulo informado" : item.titulo,
             imobiliaria: item.nome_imobiliaria,
-            data: ajustarData(item.data_criacao),
-            valor_receber: `R$ ${item.valor_bonificacao}`,
-            quant_propostas: item.quant_propostas,
+            data: dataFormatada,
+            comissao: !item.valor_bonificacao ? "" : "R$ " + item.valor_bonificacao,
+            empreendimento: item.empreendimento,
+            quant_propostas: item.qtd_propostas,
           };
         });
 
@@ -87,7 +95,7 @@ export default function BonificacoesGeradas() {
     };
 
     fetchDados();
-  }, []);
+  }, [refreshTable]);
 
   const handleSort = (coluna: keyof DadosTable) => {
     const isAsc = ordenacaoColuna === coluna && ordenacaoDirecao === "asc";
@@ -107,17 +115,55 @@ export default function BonificacoesGeradas() {
     setPagina(0);
   };
 
+  // Função adcionada ao clicar no botão Adicionar condição
+  const handleCadastrarCondicaoImob = () => {
+    handleOpenModalCadBonificacao();
+    //Logica para cadastrar bonificações, possivelmente a abertura do modal
+  };
+
+  // Função para abrir o modal
+  const handleOpenModalCadBonificacao = () => {
+    setOpenModalCadBonificacao(true)
+  };
+
+  // Função para fechar o modal
+  const handleCloseModalCadBonificacao = () => {
+    setOpenModalCadBonificacao(false)
+  };
+
+  const onRefrehTable = () => {
+    setRefreshTable(!refreshTable)
+  }
+
+  const handleRemoveItemTable = (id: number) => {
+    const confirmation = confirm("Deseja remover a condição?");
+
+    if (confirmation) {
+      setDados([])
+      setIsLoading(true)
+      axiosInstance.delete(`/bonificacao/deleteCondicaoImobiliarias`, { data: { id_condicao: id } })
+        .then(response => {
+          onRefrehTable();
+        })
+        .catch(error => {
+          console.error("Erro ao remover condição:", error);
+          alert("Houve um erro ao tentar remover a condição.");
+        });
+    }
+  }
+
   return (
     <Fragment>
       <div className={styles.container}>
+        {/* <CardTitulo buttonGoBack={false}>Bonificação por Imobiliarias</CardTitulo> */}
         <Paper className={styles.table}>
-          <HeaderTable title="Bonificações Geradas" subheader="Relação de todas as bonificações geradas pelo sistema" />
+          <HeaderTable title="Relação da Condição" subheader="Condições ativas até o momento" />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
             <Grid item xs>
               <TextField
-                label="Pesquisar"
+                label="Pesquisar Imobiliária"
                 style={{ width: 380 }}
-                placeholder="Digite a Imobiliaria...."
+                placeholder="Digite o nome da imobiliária"
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -125,11 +171,8 @@ export default function BonificacoesGeradas() {
                 onChange={(e) => setPesquisa(e.target.value)}
               />
             </Grid>
-            <Grid item>
-              {/* Opção para adicionar elemento ao grid */}
-            </Grid>
           </Grid>
-          <TableContainer style={{ height: "65vh", marginTop: 12 }}>
+          <TableContainer style={{ height: "60vh", marginTop: 12 }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -151,6 +194,15 @@ export default function BonificacoesGeradas() {
                       Imobiliaria
                     </TableSortLabel>
                   </TableCell>
+                  <TableCell key="empreendimento" className={styles.tableHeadCell}>
+                    <TableSortLabel
+                      active={ordenacaoColuna === "empreendimento"}
+                      direction={ordenacaoColuna === "empreendimento" ? ordenacaoDirecao : "asc"}
+                      onClick={() => handleSort("empreendimento")}
+                    >
+                      Empreendimento
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell key="data" className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={ordenacaoColuna === "data"}
@@ -160,48 +212,46 @@ export default function BonificacoesGeradas() {
                       Data
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell key="titulo" className={styles.tableHeadCell}>
-                    <TableSortLabel
-                      active={ordenacaoColuna === "ids_propostas"}
-                      direction={ordenacaoColuna === "ids_propostas" ? ordenacaoDirecao : "asc"}
-                      onClick={() => handleSort("ids_propostas")}
-                    >
-                      Ids Propostas
-                    </TableSortLabel>
-                  </TableCell>
                   <TableCell key="comissao" className={styles.tableHeadCell}>
                     <TableSortLabel
-                      active={ordenacaoColuna === "valor_receber"}
-                      direction={ordenacaoColuna === "valor_receber" ? ordenacaoDirecao : "asc"}
-                      onClick={() => handleSort("valor_receber")}
+                      active={ordenacaoColuna === "comissao"}
+                      direction={ordenacaoColuna === "comissao" ? ordenacaoDirecao : "asc"}
+                      onClick={() => handleSort("comissao")}
                     >
-                      Valor a Receber
+                      Comissão
                     </TableSortLabel>
                   </TableCell>
-
                   <TableCell key="quant_propostas" className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={ordenacaoColuna === "quant_propostas"}
                       direction={ordenacaoColuna === "quant_propostas" ? ordenacaoDirecao : "asc"}
                       onClick={() => handleSort("quant_propostas")}
                     >
-                      Quant. Propostas
+                      Propostas
                     </TableSortLabel>
+                  </TableCell>
+                  <TableCell key="opcoes" className={styles.tableHeadCell}>
+                    Opçoes
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {dadosOrdenados.slice(pagina * linhasPorPagina, pagina * linhasPorPagina + linhasPorPagina).map((row, index) => (
-                  <TableRow key={index} className={styles.tableRowHover}>
+                  <TableRow
+                    key={index} className={styles.tableRowHover}>
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
+                    <TableCell>{row.empreendimento}</TableCell>
                     <TableCell>{row.data}</TableCell>
-                    <TableCell>{row.ids_propostas}</TableCell>
-                    <TableCell>{row.valor_receber}</TableCell>
+                    <TableCell>{row.comissao}</TableCell>
                     <TableCell>{row.quant_propostas}</TableCell>
+                    <TableCell>
+                      <IconButton aria-label="delete" size="small" onClick={() => { handleRemoveItemTable(row.id) }}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
-                {/* Exibe duas linhas com  Skeleton Loading até a consulta ser finalizada*/}
                 {isLoading && <>
                   <TableRow>
                     <TableCell><Skeleton /></TableCell>
@@ -209,7 +259,9 @@ export default function BonificacoesGeradas() {
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
+                    <TableCell><Skeleton /></TableCell>
                   </TableRow><TableRow>
+                    <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
                     <TableCell><Skeleton /></TableCell>
@@ -231,7 +283,12 @@ export default function BonificacoesGeradas() {
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           />
         </Paper>
+        <div className={styles.buttonsFooter}>
+          <ButtonCadCondicaoImob onClick={handleCadastrarCondicaoImob} />
+          <ButtonBonificacoesGeradas />
+        </div>
       </div>
+      <ModalCadCondicao open={openModalCadBonificacao} onRefrehTable={onRefrehTable} onClose={handleCloseModalCadBonificacao} />
     </Fragment>
   );
 }

@@ -2,10 +2,7 @@ import React from 'react';
 import { Fab } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { styled } from '@mui/material/styles';
-
-interface ButtonCadCondicaoImobProps {
-  onClick: () => void;
-}
+import { useRouter } from "next/navigation";
 
 const StyledFab = styled(Fab)({
   backgroundColor: '#7B1FA2', 
@@ -15,23 +12,25 @@ const StyledFab = styled(Fab)({
   '&:hover': {
     backgroundColor: '#7E57C2' 
   },
-  width: 180, 
+  width: 280, 
   height: 56, 
   textTransform: 'uppercase', 
   fontSize: 16
 });
 
-const ButtonCadCondicaoImob: React.FC<ButtonCadCondicaoImobProps> = ({ onClick }) => {
+const ButtonBonificacoesGeradas: React.FC = () => {
+  const navigation = useRouter()
+
   return (
-    <div>
+    <div >
       <StyledFab
-        aria-label="adicionar condições"
-        onClick={onClick}
+        aria-label="Bonificações Geradas"
+        onClick={() => navigation.push("BonificacoesGeradas")}
       >
-        Condições <AddCircleIcon style={{ fontSize: '20', marginLeft: 8 }} />
+        Bonificações Geradas <AddCircleIcon style={{ fontSize: '20', marginLeft: 8 }} />
       </StyledFab>
     </div>
   );
 };
 
-export default ButtonCadCondicaoImob;
+export default ButtonBonificacoesGeradas;

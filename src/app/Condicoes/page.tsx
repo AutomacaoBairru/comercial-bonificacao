@@ -1,6 +1,6 @@
 "use client"
 import React, { Fragment, useState, useEffect } from "react";
-import axiosInstance from "../../services/axios"
+import axiosInstance from "../../services/axios";
 import {
   Table,
   TableBody,
@@ -30,11 +30,17 @@ interface DadosTable {
   empreendimento: string;
   quant_imobiliarias: string;
 }
-
+type DadosTabelaKey = keyof DadosTable;
 type Ordem = "asc" | "desc";
-type ColunaOrdenacao = keyof DadosTable | null;
 
-function ordenarArray(array: DadosTable[], coluna: keyof DadosTable, direcao: Ordem): DadosTable[] {
+interface OrdenacaoState {
+  coluna: DadosTabelaKey | null;
+  direcao: Ordem;
+  linhasPorPaginas: number;
+  pagina: number;
+}
+
+function ordenarArray(array: DadosTable[], coluna: DadosTabelaKey, direcao: Ordem): DadosTable[] {
   return array.sort((a, b) => {
     if (a[coluna] < b[coluna]) {
       return direcao === "asc" ? -1 : 1;
@@ -48,72 +54,61 @@ function ordenarArray(array: DadosTable[], coluna: keyof DadosTable, direcao: Or
 
 export default function Condicoes() {
   const [pesquisa, setPesquisa] = useState<string>("");
-  const [pagina, setPagina] = useState<number>(0);
-  const [linhasPorPagina, setLinhasPorPagina] = useState<number>(5);
-  const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("titulo");
-  const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
+  const [configTabela, setConfigTabela] = useState<OrdenacaoState>({ coluna: "titulo", direcao: "asc", linhasPorPaginas: 5, pagina: 0 });
   const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
-  const [refreshTable, setRefreshTable] = useState<boolean>(true)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [refreshTable, setRefreshTable] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [dados, setDados] = useState<DadosTable[]>([]);
 
-  const navigation = useRouter()
+  const navigation = useRouter();
 
   useEffect(() => {
-    const fetchDados = async () => {
-      setIsLoading(true)
-      setDados([])
-      try {
-        const response = await axiosInstance.get('/bonificacao/getGruposImobiliarias');
-        const dadosTratados = response.data.data.map((item: any) => {
-          return {
-            id: item.id_grupo,
-            titulo: !item.titulo ? "Sem titulo informado" : item.titulo,
-            empreendimento: item.empreendimento,
-            quant_imobiliarias: item.quantidade_imobiliarias
-          };
-        });
-
-        setDados(dadosTratados);
-        setIsLoading(false)
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-      }
-    };
-
     fetchDados();
   }, [refreshTable]);
 
-  const handleSort = (coluna: keyof DadosTable) => {
-    const isAsc = ordenacaoColuna === coluna && ordenacaoDirecao === "asc";
-    setOrdenacaoDirecao(isAsc ? "desc" : "asc");
-    setOrdenacaoColuna(coluna);
+  const fetchDados = async () => {
+    try {
+      setIsLoading(true);
+      setDados([]);
+      const response = await axiosInstance.get('/bonificacao/getGruposImobiliarias');
+      const dadosTratados = response.data.data.map((item: any) => ({
+        id: item.id_grupo,
+        titulo: !item.titulo ? "Sem titulo informado" : item.titulo,
+        empreendimento: item.empreendimento,
+        quant_imobiliarias: item.quantidade_imobiliarias,
+      }));
+
+      setDados(dadosTratados);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+    }
   };
 
-  const dadosFiltrados = dados.filter((item) => item.titulo.toLowerCase().includes(pesquisa.toLowerCase()));
-  const dadosOrdenados = ordenacaoColuna ? ordenarArray(dadosFiltrados, ordenacaoColuna, ordenacaoDirecao) : dadosFiltrados;
+  const handleSort = (coluna: keyof DadosTable) => {
+    const isAsc = configTabela.coluna === coluna && configTabela.direcao === "asc";
+    setConfigTabela({...configTabela, coluna, direcao: isAsc ? "desc" : "asc" });
+  };
+
+  const dadosFiltrados = dados.filter(item => item.titulo.toLowerCase().includes(pesquisa.toLowerCase()));
+  const dadosOrdenados = configTabela.coluna ? ordenarArray(dadosFiltrados, configTabela.coluna, configTabela.direcao) : dadosFiltrados;
 
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, novaPagina: number): void => {
-    setPagina(novaPagina);
+    setConfigTabela({...configTabela, pagina: novaPagina})
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    setLinhasPorPagina(parseInt(event.target.value, 10));
-    setPagina(0);
+    setConfigTabela({...configTabela, linhasPorPaginas: parseInt(event.target.value, 10), pagina: 0})
   };
 
-  // Função adcionada ao clicar no botão Adicionar condição
   const handleCadastrarCondicaoImob = () => {
     handleOpenModalCadBonificacao();
-    //Logica para cadastrar bonificações, possivelmente a abertura do modal
   };
 
-  // Função para abrir o modal
   const handleOpenModalCadBonificacao = () => {
     setOpenModalCadBonificacao(true)
   };
 
-  // Função para fechar o modal
   const handleCloseModalCadBonificacao = () => {
     setOpenModalCadBonificacao(false)
   };
@@ -142,7 +137,6 @@ export default function Condicoes() {
   return (
     <Fragment>
       <div className={styles.container}>
-        {/* <CardTitulo buttonGoBack={false}>Bonificação por Imobiliarias</CardTitulo> */}
         <Paper className={styles.table}>
           <HeaderTable title="Condição Bonificação" subheader="Clique sobre um item para visualizar as condições por imobiliarias" />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
@@ -165,32 +159,32 @@ export default function Condicoes() {
                 <TableRow>
                   <TableCell key="id" style={{ display: 'none' }}>
                     <TableSortLabel
-                      active={ordenacaoColuna === "id"}
-                      direction={ordenacaoColuna === "id" ? ordenacaoDirecao : "asc"}
+                      active={configTabela.coluna === "id"}
+                      direction={configTabela.coluna === "id" ? configTabela.direcao : "asc"}
                       onClick={() => handleSort("id")}>
                       ID
                     </TableSortLabel>
                   </TableCell>
                   <TableCell key="titulo" className={styles.tableHeadCell}>
                     <TableSortLabel
-                      active={ordenacaoColuna === "titulo"}
-                      direction={ordenacaoColuna === "titulo" ? ordenacaoDirecao : "asc"}
+                      active={configTabela.coluna === "titulo"}
+                      direction={configTabela.coluna === "titulo" ? configTabela.direcao : "asc"}
                       onClick={() => handleSort("titulo")}>
                       Titulo
                     </TableSortLabel>
                   </TableCell>
                   <TableCell key="titulo" className={styles.tableHeadCell}>
                     <TableSortLabel
-                      active={ordenacaoColuna === "empreendimento"}
-                      direction={ordenacaoColuna === "empreendimento" ? ordenacaoDirecao : "asc"}
+                      active={configTabela.coluna === "empreendimento"}
+                      direction={configTabela.coluna === "empreendimento" ? configTabela.direcao : "asc"}
                       onClick={() => handleSort("empreendimento")}>
                       Empreendimento
                     </TableSortLabel>
                   </TableCell>
                   <TableCell key="quant_imobiliarias" className={styles.tableHeadCell}>
                     <TableSortLabel
-                      active={ordenacaoColuna === "quant_imobiliarias"}
-                      direction={ordenacaoColuna === "quant_imobiliarias" ? ordenacaoDirecao : "asc"}
+                      active={configTabela.coluna === "quant_imobiliarias"}
+                      direction={configTabela.coluna === "quant_imobiliarias" ? configTabela.direcao : "asc"}
                       onClick={() => handleSort("quant_imobiliarias")}>
                       Quantidade Imobiliarias
                     </TableSortLabel>
@@ -201,7 +195,7 @@ export default function Condicoes() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {dadosOrdenados.slice(pagina * linhasPorPagina, pagina * linhasPorPagina + linhasPorPagina).map((row, index) => (
+                {dadosOrdenados.slice(configTabela.pagina * configTabela.linhasPorPaginas, configTabela.pagina * configTabela.linhasPorPaginas + configTabela.linhasPorPaginas).map((row, index) => (
                   <TableRow
                     key={index} 
                     className={styles.tableRowHover}>
@@ -235,8 +229,8 @@ export default function Condicoes() {
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
             count={dadosFiltrados.length}
-            rowsPerPage={linhasPorPagina}
-            page={pagina}
+            rowsPerPage={configTabela.linhasPorPaginas}
+            page={configTabela.pagina}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             labelRowsPerPage="Linhas por página:"

@@ -110,7 +110,6 @@ export default function BonificacoesGeradas() {
   return (
     <Fragment>
       <div className={styles.container}>
-        <CardTitulo buttonGoBack={true}>Bonificação por Imobiliarias</CardTitulo>
         <Paper className={styles.table}>
           <HeaderTable title="Bonificações Geradas" subheader="Relação de todas as bonificações geradas pelo sistema" />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
@@ -130,7 +129,7 @@ export default function BonificacoesGeradas() {
               {/* Opção para adicionar elemento ao grid */}
             </Grid>
           </Grid>
-          <TableContainer style={{ height: "50vh", marginTop: 12 }}>
+          <TableContainer style={{ height: "65vh", marginTop: 12 }}>
             <Table>
               <TableHead>
                 <TableRow>

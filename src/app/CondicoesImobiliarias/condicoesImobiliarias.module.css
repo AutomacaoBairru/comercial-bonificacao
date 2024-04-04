@@ -1,0 +1,23 @@
+.container {
+    margin: 25px 80px;
+  }
+  
+  .table {
+    margin-top: 18px;
+    height: 85vh
+  }
+  
+  .tableHeadCell {
+    font-weight: bold;
+  }
+  
+  .tableRowHover:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .buttonsFooter {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }

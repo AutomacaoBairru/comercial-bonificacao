@@ -1,5 +1,5 @@
 import Condicoes from "./Condicoes/page";
 
-export default function(){
+export default function Home(){
   return <Condicoes />
 }

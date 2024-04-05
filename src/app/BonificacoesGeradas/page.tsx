@@ -50,9 +50,8 @@ export default function BonificacoesGeradas() {
   const [linhasPorPagina, setLinhasPorPagina] = useState<number>(5);
   const [ordenacaoColuna, setOrdenacaoColuna] = useState<ColunaOrdenacao>("imobiliaria");
   const [ordenacaoDirecao, setOrdenacaoDirecao] = useState<Ordem>("asc");
-  const [isLoading, setIsLoading] = useState<boolean>(true) //Controla o estado da tabela enquanto ocorre o carregamento
-
-  const [dados, setDados] = useState<DadosTable[]>([]); // Alterado para armazenar dados da API
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [dados, setDados] = useState<DadosTable[]>([]);
 
   useEffect(() => {
     const fetchDados = async () => {
@@ -111,7 +110,10 @@ export default function BonificacoesGeradas() {
     <Fragment>
       <div className={styles.container}>
         <Paper className={styles.table}>
-          <HeaderTable title="Bonificações Geradas" subheader="Relação de todas as bonificações geradas pelo sistema" />
+          <HeaderTable
+            title="Bonificações Geradas"
+            subheader="Relação de todas as bonificações geradas pelo sistema"
+            buttonBack={true} />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
             <Grid item xs>
               <TextField
@@ -129,7 +131,7 @@ export default function BonificacoesGeradas() {
               {/* Opção para adicionar elemento ao grid */}
             </Grid>
           </Grid>
-          <TableContainer style={{ height: "65vh", marginTop: 12 }}>
+          <TableContainer className={styles.tableContainer}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -201,7 +203,6 @@ export default function BonificacoesGeradas() {
                     <TableCell>{row.quant_propostas}</TableCell>
                   </TableRow>
                 ))}
-                {/* Exibe duas linhas com  Skeleton Loading até a consulta ser finalizada*/}
                 {isLoading && <>
                   <TableRow>
                     <TableCell><Skeleton /></TableCell>

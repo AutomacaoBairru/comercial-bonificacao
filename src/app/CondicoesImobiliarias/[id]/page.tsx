@@ -1,6 +1,6 @@
 "use client"
 import React, { Fragment, useState, useEffect } from 'react';
-import axiosInstance from '../../services/axios';
+import axiosInstance from '../../../services/axios';
 import {
   Table,
   TableBody,
@@ -22,7 +22,10 @@ import HeaderTable from '@/components/HeaderTable';
 import ModalCadCondicao from '@/components/ModalCadBonificacao';
 import styles from './condicoesImobiliarias.module.css';
 import ButtonBonificacoesGeradas from '@/components/ButtonBonificacoesGeradas';
-import { useSearchParams } from 'next/navigation';
+
+interface Props {
+  params: {id: string}
+}
 
 interface DadosTable {
   id: number;
@@ -55,7 +58,7 @@ function ordenarArray(array: DadosTable[], coluna: DadosTabelaKey, direcao: Orde
   });
 }
 
-export default function CondicoesImobiliarias() {
+export default function CondicoesImobiliarias({params}: Props) {
   const [pesquisa, setPesquisa] = useState<string>('');
   const [configTabela, setConfigTabela] = useState<OrdenacaoState>({ coluna: 'titulo', direcao: 'asc', linhasPorPaginas: 5, pagina: 0 });
   const [openModalCadBonificacao, setOpenModalCadBonificacao] = useState<boolean>(false);
@@ -63,12 +66,7 @@ export default function CondicoesImobiliarias() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [dados, setDados] = useState<DadosTable[]>([]);
 
-  const router = useSearchParams();
-  const id_grupo = router.get('id');
-
-  useEffect(() => {
-    fetchDados();
-  }, [refreshTable]);
+  const id_grupo = params.id
 
   const fetchDados = async () => {
     setIsLoading(true);
@@ -101,20 +99,24 @@ export default function CondicoesImobiliarias() {
     }
   };
 
+  useEffect(() => {
+    fetchDados();
+  }, [refreshTable]);
+
   const handleSort = (coluna: keyof DadosTable) => {
     const isAsc = configTabela.coluna === coluna && configTabela.direcao === 'asc';
-    setConfigTabela({...configTabela, coluna, direcao: isAsc ? 'desc' : 'asc' });
+    setConfigTabela({ ...configTabela, coluna, direcao: isAsc ? 'desc' : 'asc' });
   };
 
   const dadosFiltrados = dados.filter((item) => item.imobiliaria.toLowerCase().includes(pesquisa.toLowerCase()));
   const dadosOrdenados = configTabela.coluna ? ordenarArray(dadosFiltrados, configTabela.coluna, configTabela.direcao) : dadosFiltrados;
 
   const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, novaPagina: number): void => {
-    setConfigTabela({...configTabela, pagina: novaPagina})
+    setConfigTabela({ ...configTabela, pagina: novaPagina })
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    setConfigTabela({...configTabela, linhasPorPaginas: parseInt(event.target.value, 10), pagina: 0})
+    setConfigTabela({ ...configTabela, linhasPorPaginas: parseInt(event.target.value, 10), pagina: 0 })
   };
 
   const handleCadastrarCondicaoImob = () => {
@@ -158,8 +160,8 @@ export default function CondicoesImobiliarias() {
     <Fragment>
       <div className={styles.container}>
         <Paper className={styles.table}>
-          <HeaderTable 
-            title="Relação da Condição" 
+          <HeaderTable
+            title="Relação da Condição"
             subheader="Condições ativas até o momento" />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
             <Grid item xs>
@@ -179,8 +181,8 @@ export default function CondicoesImobiliarias() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell 
-                    key="id" 
+                  <TableCell
+                    key="id"
                     style={{ display: 'none' }}>
                     <TableSortLabel
                       active={configTabela.coluna === "id"}
@@ -190,8 +192,8 @@ export default function CondicoesImobiliarias() {
                       ID
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell 
-                    key="imobiliaria" 
+                  <TableCell
+                    key="imobiliaria"
                     className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={configTabela.coluna === "imobiliaria"}
@@ -201,8 +203,8 @@ export default function CondicoesImobiliarias() {
                       Imobiliaria
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell 
-                    key="empreendimento" 
+                  <TableCell
+                    key="empreendimento"
                     className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={configTabela.coluna === "empreendimento"}
@@ -212,8 +214,8 @@ export default function CondicoesImobiliarias() {
                       Empreendimento
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell 
-                    key="data" 
+                  <TableCell
+                    key="data"
                     className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={configTabela.coluna === "data"}
@@ -223,8 +225,8 @@ export default function CondicoesImobiliarias() {
                       Data
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell 
-                    key="comissao" 
+                  <TableCell
+                    key="comissao"
                     className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={configTabela.coluna === "comissao"}
@@ -234,8 +236,8 @@ export default function CondicoesImobiliarias() {
                       Comissão
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell 
-                    key="quant_propostas" 
+                  <TableCell
+                    key="quant_propostas"
                     className={styles.tableHeadCell}>
                     <TableSortLabel
                       active={configTabela.coluna === "quant_propostas"}
@@ -245,8 +247,8 @@ export default function CondicoesImobiliarias() {
                       Propostas
                     </TableSortLabel>
                   </TableCell>
-                  <TableCell 
-                    key="opcoes" 
+                  <TableCell
+                    key="opcoes"
                     className={styles.tableHeadCell}>
                     Opçoes
                   </TableCell>
@@ -255,7 +257,7 @@ export default function CondicoesImobiliarias() {
               <TableBody>
                 {dadosOrdenados.slice(configTabela.pagina * configTabela.linhasPorPaginas, configTabela.pagina * configTabela.linhasPorPaginas + configTabela.linhasPorPaginas).map((row, index) => (
                   <TableRow
-                    key={index} 
+                    key={index}
                     className={styles.tableRowHover}>
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
                     <TableCell>{row.imobiliaria}</TableCell>
@@ -302,14 +304,14 @@ export default function CondicoesImobiliarias() {
           />
         </Paper>
         <div className={styles.buttonsFooter}>
-          <ButtonCadCondicaoImob 
+          <ButtonCadCondicaoImob
             onClick={handleCadastrarCondicaoImob} />
           <ButtonBonificacoesGeradas />
         </div>
       </div>
-      <ModalCadCondicao 
-        open={openModalCadBonificacao} 
-        onRefrehTable={onRefrehTable} 
+      <ModalCadCondicao
+        open={openModalCadBonificacao}
+        onRefrehTable={onRefrehTable}
         onClose={handleCloseModalCadBonificacao} />
     </Fragment>
   );

@@ -200,9 +200,9 @@ export default function Condicoes() {
                     key={index} 
                     className={styles.tableRowHover}>
                     <TableCell style={{ display: 'none' }}>{row.id}</TableCell>
-                    <TableCell style={{cursor: "pointer"}} onClick={() => navigation.push(`/CondicoesImobiliarias?id=${row.id}`)}>{row.titulo}</TableCell>
-                    <TableCell style={{cursor: "pointer"}} onClick={() => navigation.push(`/CondicoesImobiliarias?id=${row.id}`)}>{row.empreendimento}</TableCell>
-                    <TableCell style={{cursor: "pointer"}} onClick={() => navigation.push(`/CondicoesImobiliarias?id=${row.id}`)}>{row.quant_imobiliarias}</TableCell>
+                    <TableCell style={{cursor: "pointer"}} onClick={() => navigation.push(`/CondicoesImobiliarias/${row.id}`)}>{row.titulo}</TableCell>
+                    <TableCell style={{cursor: "pointer"}} onClick={() => navigation.push(`/CondicoesImobiliarias/${row.id}`)}>{row.empreendimento}</TableCell>
+                    <TableCell style={{cursor: "pointer"}} onClick={() => navigation.push(`/CondicoesImobiliarias/${row.id}`)}>{row.quant_imobiliarias}</TableCell>
                     <TableCell>
                       <IconButton aria-label="delete" size="small" onClick={() => { handleRemoveItemTable(row.id) }}>
                         <DeleteIcon />

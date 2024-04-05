@@ -4,7 +4,11 @@
   
   .table {
     margin-top: 18px;
-    height: 85vh
+    height: calc(100vh - 120px);
+  }
+
+  .tableContainer {
+    height: calc(100vh - 330px);
   }
   
   .tableHeadCell {

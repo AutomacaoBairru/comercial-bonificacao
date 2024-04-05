@@ -138,7 +138,10 @@ export default function Condicoes() {
     <Fragment>
       <div className={styles.container}>
         <Paper className={styles.table}>
-          <HeaderTable title="Condição Bonificação" subheader="Clique sobre um item para visualizar as condições por imobiliarias" />
+          <HeaderTable 
+          title="Condição Bonificação" 
+          subheader="Clique sobre um item para visualizar as condições por imobiliarias" 
+          buttonBack={false}/>
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
             <Grid item xs>
               <TextField
@@ -153,7 +156,7 @@ export default function Condicoes() {
               />
             </Grid>
           </Grid>
-          <TableContainer style={{ height: "60vh", marginTop: 12 }}>
+          <TableContainer className={styles.tableContainer}>
             <Table>
               <TableHead>
                 <TableRow>

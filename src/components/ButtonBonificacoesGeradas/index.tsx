@@ -25,7 +25,7 @@ const ButtonBonificacoesGeradas: React.FC = () => {
     <div >
       <StyledFab
         aria-label="Bonificações Geradas"
-        onClick={() => navigation.push("BonificacoesGeradas")}
+        onClick={() => navigation.push("/BonificacoesGeradas/")}
       >
         Bonificações Geradas <AddCircleIcon style={{ fontSize: '20', marginLeft: 8 }} />
       </StyledFab>

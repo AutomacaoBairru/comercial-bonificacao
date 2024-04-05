@@ -162,7 +162,8 @@ export default function CondicoesImobiliarias({params}: Props) {
         <Paper className={styles.table}>
           <HeaderTable
             title="Relação da Condição"
-            subheader="Condições ativas até o momento" />
+            subheader="Condições ativas até o momento"
+            buttonBack={true} />
           <Grid container spacing={2} alignItems="flex-end" style={{ marginTop: 20, marginLeft: 10 }}>
             <Grid item xs>
               <TextField
@@ -177,7 +178,7 @@ export default function CondicoesImobiliarias({params}: Props) {
               />
             </Grid>
           </Grid>
-          <TableContainer style={{ height: "60vh", marginTop: 12 }}>
+          <TableContainer className={styles.tableContainer}>
             <Table>
               <TableHead>
                 <TableRow>
